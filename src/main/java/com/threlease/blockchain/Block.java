@@ -1,5 +1,6 @@
 package com.threlease.blockchain;
 
+import com.threlease.Config;
 import com.threlease.utils.Failable;
 import com.threlease.utils.MerkleTree;
 import lombok.Getter;
@@ -16,7 +17,11 @@ public class Block extends BlockHeader {
     public long difficulty;
     public List<String> data;
 
-    public Block(Block _previousBlock, List<String> _data) throws NoSuchAlgorithmException {
+    public Block(
+            Block _previousBlock,
+            List<String> _data,
+            Block _adjustmentBlock
+    ) throws NoSuchAlgorithmException {
         super(_previousBlock);
 
         if (_previousBlock == null) {
@@ -28,7 +33,11 @@ public class Block extends BlockHeader {
         this.merkleRoot = Block.getMerkleRoot(_data);
         this.hash = Block.createBlockHash(this);
         this.nonce = 0;
-        this.difficulty = 0;
+        this.difficulty = Block.getDifficult(
+                this,
+                _adjustmentBlock,
+                _previousBlock
+        );
         this.data = _data;
     }
 
@@ -43,11 +52,34 @@ public class Block extends BlockHeader {
     }
 
     public static Block getGenesis() throws NoSuchAlgorithmException {
-        return new Block(null, List.of("[cth Genesis]"));
+        return new Block(null, List.of("[cth Genesis]"), null);
     }
 
-    public static Block generateBlock(Block _previousBlock, List<String> _data) throws NoSuchAlgorithmException {
-        return new Block(_previousBlock, _data);
+    public static Block generateBlock(
+            Block _previousBlock,
+            List<String> _data,
+            Block _adjustmentBlock
+    ) throws NoSuchAlgorithmException {
+        Block generatedBlock = new Block(_previousBlock, _data, _adjustmentBlock);
+
+        return findBlock(generatedBlock);
+    }
+
+    public static Block findBlock(Block _generatedBlock) throws NoSuchAlgorithmException {
+        String hash;
+        long nonce = 0;
+        while (true) {
+            nonce++;
+            _generatedBlock.nonce = nonce;
+            hash = Block.createBlockHash(_generatedBlock);
+            String binary = StringUtil.hexToBinary(hash);
+            boolean result = binary.startsWith("0".repeat((int) _generatedBlock.difficulty));
+
+            if (result) {
+                _generatedBlock.hash = hash;
+                return _generatedBlock;
+            }
+        }
     }
 
     public static Failable<Block, String> isValidNewBlock(
@@ -64,6 +96,30 @@ public class Block extends BlockHeader {
             return Failable.error("block hash error");
         }
         return Failable.success(_newBlock);
+    }
+
+    public static long getDifficult(
+            Block _newBlock,
+            Block _adjustmentBlock,
+            Block _previousBlock
+    ) {
+        if (_newBlock.height <= 9) return 0;
+        if (_newBlock.height <= 19) return 1;
+
+        if (_newBlock.height % Config.DIFFICULTY_ADJUSTMENT_INTERVAL != 0)
+            return _previousBlock.difficulty;
+
+        long timeTaken = _newBlock.timestamp - _adjustmentBlock.timestamp;
+        long timeExpected = Config.BLOCK_GENERATION_TIME_UNIT *
+                Config.BLOCK_GENERATION_INTERVAL *
+                Config.DIFFICULTY_ADJUSTMENT_INTERVAL;
+
+        if (timeTaken < timeExpected / 2)
+            return _adjustmentBlock.difficulty + 1;
+        else if (timeTaken > timeExpected / 2)
+            return _adjustmentBlock.difficulty - 1;
+
+        return _adjustmentBlock.difficulty;
     }
 
     @Override
