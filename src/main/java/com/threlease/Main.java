@@ -1,6 +1,7 @@
 package com.threlease;
 
 import com.threlease.blockchain.Block;
+import com.threlease.blockchain.Chain;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,12 +14,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        List<String> data = List.of(
-                "cth Genesis"
-        );
-
-        Block block = new Block(null, List.of("cth Genesis"));
-
-        System.out.println(block.toString());
+        Chain chain = new Chain();
+        chain.addBlock(List.of("Block #1"));
+        System.out.println(chain.getChain());
     }
 }
