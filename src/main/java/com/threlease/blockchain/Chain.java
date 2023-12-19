@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chain {
-    private List<Block> blockchain;
+    private final List<Block> blockchain;
 
     public Chain() throws NoSuchAlgorithmException {
         this.blockchain = new ArrayList<>();
@@ -17,6 +17,7 @@ public class Chain {
     }
 
     public List<Block> getChain() {
+        System.out.println(blockchain);
         return this.blockchain;
     }
 
@@ -33,7 +34,8 @@ public class Chain {
         Block newBlock = Block.generateBlock(previousBlock, data, getAdjustmentBlock());
         Failable<Block, String> isValid = Block.isValidNewBlock(newBlock, previousBlock);
 
-        if (isValid.isError()) return Failable.error(isValid.getError());
+        if (isValid.isError())
+                return Failable.error(isValid.getError());
         this.blockchain.add(newBlock);
         return Failable.success(newBlock);
     }
