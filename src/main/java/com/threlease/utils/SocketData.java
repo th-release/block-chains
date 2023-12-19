@@ -1,11 +1,11 @@
 package com.threlease.utils;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
-public class Socket {
-    private String action;
+@NoArgsConstructor
+public class SocketData {
+    private String prefix;
     private Object data;
 }
