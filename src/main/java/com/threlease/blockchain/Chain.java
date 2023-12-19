@@ -4,13 +4,16 @@ import com.threlease.Config;
 import com.threlease.utils.Failable;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Chain {
     private List<Block> blockchain;
 
     public Chain() throws NoSuchAlgorithmException {
-        this.blockchain = List.of(Block.getGenesis());
+        this.blockchain = new ArrayList<>();
+
+        blockchain.add(Block.getGenesis());
     }
 
     public List<Block> getChain() {
@@ -27,11 +30,10 @@ public class Chain {
 
     public Failable<Block, String> addBlock(List<String> data) throws NoSuchAlgorithmException {
         Block previousBlock = this.getLatestBlock();
-        Block newBlock = Block.generateBlock(previousBlock, data);
+        Block newBlock = Block.generateBlock(previousBlock, data, getAdjustmentBlock());
         Failable<Block, String> isValid = Block.isValidNewBlock(newBlock, previousBlock);
 
         if (isValid.isError()) return Failable.error(isValid.getError());
-
         this.blockchain.add(newBlock);
         return Failable.success(newBlock);
     }
@@ -45,7 +47,7 @@ public class Chain {
     public Block getAdjustmentBlock() throws NoSuchAlgorithmException {
         return this.getLength() < Config.DIFFICULTY_ADJUSTMENT_INTERVAL
                 ? Block.getGenesis()
-                : this.blockchain.get((int) (this.getLength() - Config.DIFFICULTY_ADJUSTMENT_INTERVAL)); //
+                : this.blockchain.get((int) (this.getLength() - Config.DIFFICULTY_ADJUSTMENT_INTERVAL));
     }
 
 }
