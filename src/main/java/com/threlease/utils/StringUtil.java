@@ -1,5 +1,6 @@
 package com.threlease.utils;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
@@ -11,10 +12,10 @@ public class StringUtil {
             // 적용하고 배열로 넘김
             byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
             // 해시를 16진수로 변환
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if(hex.length() == 1) hexString.append('0');
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
@@ -22,5 +23,12 @@ public class StringUtil {
         catch(Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String hexToBinary(String hex) {
+        // 16진수 문자열을 숫자로 변환합니다.
+        BigInteger num = new BigInteger(hex, 16);
+        // 숫자를 2진수 문자열로 변환합니다.
+        return num.toString(2);
     }
 }
