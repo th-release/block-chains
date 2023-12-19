@@ -41,18 +41,18 @@ public class Block extends BlockHeader {
         this.data = _data;
     }
 
-    static String getMerkleRoot(List<String> data) {
+    public static Block getGenesis() throws NoSuchAlgorithmException {
+        return new Block(null, List.of("[cth Genesis]"), null);
+    }
+
+    public static String getMerkleRoot(List<String> data) {
         MerkleTree merkleTree = new MerkleTree(data);
         return merkleTree.getMerkleRoot();
     }
 
     public static String createBlockHash(Block _block) throws NoSuchAlgorithmException {
-        String value = _block.version + _block.timestamp + _block.height + _block.merkleRoot + _block.previousHash;
+        String value = _block.version + _block.timestamp + _block.height + _block.merkleRoot + _block.previousHash+_block.difficulty+_block.nonce;
         return StringUtil.applySha256(value);
-    }
-
-    public static Block getGenesis() throws NoSuchAlgorithmException {
-        return new Block(null, List.of("[cth Genesis]"), null);
     }
 
     public static Block generateBlock(
