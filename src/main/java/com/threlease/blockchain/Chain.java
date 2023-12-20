@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chain {
-    private final List<Block> blockchain;
+    private List<Block> blockchain;
 
     public Chain() throws NoSuchAlgorithmException {
         this.blockchain = new ArrayList<>();
@@ -17,7 +17,6 @@ public class Chain {
     }
 
     public List<Block> getChain() {
-        System.out.println(blockchain);
         return this.blockchain;
     }
 
